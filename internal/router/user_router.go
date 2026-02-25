@@ -11,6 +11,7 @@ func NewUserRouter(handler *handler.UserHandler) http.Handler {
 	router := chi.NewRouter()
 
 	router.Post("/", handler.Create)
+	router.Delete("/{userId}", handler.Delete)
 
 	return router
 }

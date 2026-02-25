@@ -2,9 +2,13 @@ package repositoryimpl
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
+	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
 )
 
 type UserRepository struct {
@@ -37,6 +41,21 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (r *UserRepository) Get(ctx context.Context)    {}
-func (r *UserRepository) Update(ctx context.Context) {}
-func (r *UserRepository) Delete(ctx context.Context) {}
+func (r *UserRepository) Delete(ctx context.Context, userId int) error {
+	query := `
+		UPDATE users
+		SET is_active=FALSE, updated_at=$2
+		WHERE id=$1
+	`
+
+	res, err := r.db.Exec(ctx, query, userId, time.Now())
+	if err != nil {
+		slog.Error(err.Error())
+		return util.NewInternalError("failed to delete user")
+	}
+
+	if res.RowsAffected() == 0 {
+		return util.NewNotFoundError(fmt.Sprintf("no user found with id %d", userId))
+	}
+	return nil
+}

@@ -8,7 +8,5 @@ import (
 
 type UserRepositoryInterface interface {
 	Create(ctx context.Context, user *model.User) error
-	Get(ctx context.Context)
-	Update(ctx context.Context)
-	Delete(ctx context.Context)
+	Delete(ctx context.Context, userId int) error
 }

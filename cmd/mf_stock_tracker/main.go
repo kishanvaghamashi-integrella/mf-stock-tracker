@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -39,7 +40,7 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		log.Println("Starting server on :8080")
+		slog.Info("Starting server on :8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("ListenAndServe error: %v", err)
 		}
@@ -50,7 +51,7 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	slog.Info("Shutting down server...")
 
 	// Graceful shutdown with timeout
 	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
@@ -60,5 +61,5 @@ func main() {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	log.Println("Server exited gracefully")
+	slog.Info("Server exited gracefully")
 }
