@@ -41,7 +41,7 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (r *UserRepository) Delete(ctx context.Context, userId int) error {
+func (r *UserRepository) Delete(ctx context.Context, userId int64) error {
 	query := `
 		UPDATE users
 		SET is_active=FALSE, updated_at=$2

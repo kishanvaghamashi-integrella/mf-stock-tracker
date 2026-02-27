@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
@@ -22,7 +21,7 @@ func NewUserService(service *service.UserService) *UserHandler {
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		util.SendErrorResponse(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -36,24 +35,20 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.SendResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("User created with id %d", user.ID)})
+	util.SendResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("user created with id %d", user.ID)})
 }
 
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.Atoi(r.PathValue("userId"))
+	userId, err := parseIntegerID(r, "userId")
 	if err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "Error while parsing the userId")
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}
 
 	if err := h.service.Delete(r.Context(), userId); err != nil {
-		if appErr, ok := err.(*util.AppError); ok {
-			util.SendErrorResponse(w, appErr.Code, appErr.Message)
-		} else {
-			util.SendErrorResponse(w, http.StatusInternalServerError, "unexpected error")
-		}
+		handleError(w, err)
 		return
 	}
 
-	util.SendResponse(w, http.StatusOK, map[string]string{"message": "User deleted successfully."})
+	util.SendResponse(w, http.StatusOK, map[string]string{"message": "user deleted successfully."})
 }

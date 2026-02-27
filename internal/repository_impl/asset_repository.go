@@ -78,14 +78,15 @@ func (r *AssetRepository) GetByID(ctx context.Context, id int64) (*model.Asset, 
 	return &asset, nil
 }
 
-func (r *AssetRepository) GetAll(ctx context.Context) ([]model.Asset, error) {
+func (r *AssetRepository) GetAll(ctx context.Context, limit, offset int) ([]model.Asset, error) {
 	query := `
 		SELECT id, symbol, name, instrument_type, isin, exchange, currency, external_platform_id, created_at
 		FROM assets
 		ORDER BY id
+		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query, limit, offset)
 	if err != nil {
 		slog.Error("failed to list assets", "error", err.Error())
 		return nil, util.NewInternalError("failed to list assets")

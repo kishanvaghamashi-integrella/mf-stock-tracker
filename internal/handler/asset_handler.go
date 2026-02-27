@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
@@ -44,7 +43,7 @@ func (h *AssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r, "assetId")
+	id, err := parseIntegerID(r, "assetId")
 	if err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid asset id")
 		return
@@ -60,7 +59,13 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	assets, err := h.service.GetAll(r.Context())
+	limit, offset, err := parsePaginationParams(r)
+	if err != nil {
+		util.SendErrorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	assets, err := h.service.GetAll(r.Context(), limit, offset)
 	if err != nil {
 		handleError(w, err)
 		return
@@ -70,7 +75,7 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) Update(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r, "assetId")
+	id, err := parseIntegerID(r, "assetId")
 	if err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid asset id")
 		return
@@ -96,7 +101,7 @@ func (h *AssetHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r, "assetId")
+	id, err := parseIntegerID(r, "assetId")
 	if err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid asset id")
 		return
@@ -108,16 +113,4 @@ func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.SendResponse(w, http.StatusOK, map[string]string{"message": "asset deleted successfully"})
-}
-
-func parseID(r *http.Request, param string) (int64, error) {
-	return strconv.ParseInt(r.PathValue(param), 10, 64)
-}
-
-func handleError(w http.ResponseWriter, err error) {
-	if appErr, ok := err.(*util.AppError); ok {
-		util.SendErrorResponse(w, appErr.Code, appErr.Message)
-	} else {
-		util.SendErrorResponse(w, http.StatusInternalServerError, "unexpected error")
-	}
 }

@@ -42,8 +42,8 @@ func (s *AssetService) GetByID(ctx context.Context, id int64) (*model.Asset, err
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *AssetService) GetAll(ctx context.Context) ([]model.Asset, error) {
-	return s.repo.GetAll(ctx)
+func (s *AssetService) GetAll(ctx context.Context, limit, offset int) ([]model.Asset, error) {
+	return s.repo.GetAll(ctx, limit, offset)
 }
 
 func (s *AssetService) Update(ctx context.Context, id int64, req *dto.UpdateAssetRequest) error {
