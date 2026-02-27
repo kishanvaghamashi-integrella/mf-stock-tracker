@@ -17,8 +17,8 @@ CREATE INDEX idx_assets_isin ON assets(isin);
 SELECT 'up SQL query';
 -- +goose StatementEnd
 -- +goose Down
-DROP TABLE IF EXISTS assets;
 DROP INDEX IF EXISTS idx_assets_isin;
+DROP TABLE IF EXISTS assets;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
