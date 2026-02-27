@@ -30,7 +30,7 @@ func (s *UserService) Create(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (s *UserService) Delete(ctx context.Context, userId int) error {
+func (s *UserService) Delete(ctx context.Context, userId int64) error {
 	err := s.repo.Delete(ctx, userId)
 	return err
 }
