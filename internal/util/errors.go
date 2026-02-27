@@ -5,7 +5,7 @@ import (
 )
 
 type AppError struct {
-	Code    int64
+	Code    int
 	Message string
 }
 

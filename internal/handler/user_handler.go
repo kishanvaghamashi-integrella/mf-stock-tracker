@@ -50,5 +50,5 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.SendResponse(w, http.StatusOK, map[string]string{"message": "user deleted successfully."})
+	util.SendResponse(w, http.StatusOK, map[string]string{"message": "user deleted successfully"})
 }
