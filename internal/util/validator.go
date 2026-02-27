@@ -6,6 +6,13 @@ import (
 
 var Validate *validator.Validate = validator.New()
 
+func init() {
+	Validate.RegisterValidation("instrument_type", func(fl validator.FieldLevel) bool {
+		val := fl.Field().String()
+		return val == "stock" || val == "mutual_fund"
+	})
+}
+
 type ValidationError struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
@@ -46,6 +53,11 @@ func getErrorMessage(e validator.FieldError) string {
 		return "Value must be greater than or equal to " + e.Param()
 	case "lte":
 		return "Value must be less than or equal to " + e.Param()
+
+	// Custom validation errors
+	case "instrument_type":
+		return "Invalid instrument type, must be 'stock' or 'mutual_fund'"
+
 	default:
 		return "Invalid value for " + e.Tag()
 	}

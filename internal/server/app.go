@@ -18,14 +18,18 @@ type App struct {
 func NewServer(db *pgxpool.Pool) *App {
 	// Repository
 	userRepo := repositoryimpl.NewUserRepository(db)
+	assetRepo := repositoryimpl.NewAssetRepository(db)
 
 	// Service
 	userService := service.NewUserService(userRepo)
+	assetService := service.NewAssetService(assetRepo)
 
 	// Handler
 	userHandler := handler.NewUserService(userService)
+	assetHandler := handler.NewAssetHandler(assetService)
 
 	r := chi.NewRouter()
 	r.Mount("/api/users", router.NewUserRouter(userHandler))
+	r.Mount("/api/assets", router.NewAssetRouter(assetHandler))
 	return &App{Router: r}
 }
