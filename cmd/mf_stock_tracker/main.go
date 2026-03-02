@@ -15,6 +15,12 @@ import (
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/server"
 )
 
+// @title MF Stock Tracker API
+// @version 1.0
+// @description API for managing users and assets in MF Stock Tracker.
+// @BasePath /
+// @schemes http https
+
 func main() {
 	// Loading `.env` file
 	err := godotenv.Load()
