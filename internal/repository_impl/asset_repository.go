@@ -163,3 +163,15 @@ func (r *AssetRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (r *AssetRepository) ExistsByID(ctx context.Context, id int64) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM assets WHERE id = $1)`
+
+	var exists bool
+	if err := r.db.QueryRow(ctx, query, id).Scan(&exists); err != nil {
+		slog.Error("failed to check asset existence", "error", err.Error())
+		return false, util.NewInternalError("failed to check asset existence")
+	}
+
+	return exists, nil
+}

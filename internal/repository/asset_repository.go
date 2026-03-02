@@ -12,4 +12,5 @@ type AssetRepositoryInterface interface {
 	GetAll(ctx context.Context, limit, offset int) ([]model.Asset, error)
 	Update(ctx context.Context, asset *model.Asset) error
 	Delete(ctx context.Context, id int64) error
+	ExistsByID(ctx context.Context, id int64) (bool, error)
 }
