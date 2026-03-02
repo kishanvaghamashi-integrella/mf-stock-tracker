@@ -54,7 +54,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Description Delete user by ID
 // @Tags users
 // @Produce json
-// @Param userId path int true "User ID"
+// @Param userId path int64 true "User ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody

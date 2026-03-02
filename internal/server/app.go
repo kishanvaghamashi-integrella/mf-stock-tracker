@@ -2,6 +2,8 @@ package server
 
 import (
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,11 +33,18 @@ func NewServer(db *pgxpool.Pool) *App {
 	assetHandler := handler.NewAssetHandler(assetService)
 
 	r := chi.NewRouter()
-	r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/swagger/index.html", http.StatusMovedPermanently)
-	})
-	r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
+	if isDevelopmentEnvironment() {
+		r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/swagger/index.html", http.StatusTemporaryRedirect)
+		})
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
+	}
 	r.Mount("/api/users", router.NewUserRouter(userHandler))
 	r.Mount("/api/assets", router.NewAssetRouter(assetHandler))
 	return &App{Router: r}
+}
+
+func isDevelopmentEnvironment() bool {
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV")))
+	return env == "dev" || env == "development" || env == "local"
 }
