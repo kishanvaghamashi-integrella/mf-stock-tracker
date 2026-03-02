@@ -18,6 +18,17 @@ func NewUserService(service *service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
+// Create godoc
+// @Summary Create user
+// @Description Create a new user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param payload body model.User true "Create user payload"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} util.ErrorBody
+// @Failure 500 {object} util.ErrorBody
+// @Router /api/users/ [post]
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -38,6 +49,17 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	util.SendResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("user created with id %d", user.ID)})
 }
 
+// Delete godoc
+// @Summary Delete user
+// @Description Delete user by ID
+// @Tags users
+// @Produce json
+// @Param userId path int true "User ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} util.ErrorBody
+// @Failure 404 {object} util.ErrorBody
+// @Failure 500 {object} util.ErrorBody
+// @Router /api/users/{userId} [delete]
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	userId, err := parseIntegerID(r, "userId")
 	if err != nil {

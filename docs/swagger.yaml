@@ -1,0 +1,340 @@
+basePath: /
+definitions:
+  dto.CreateAssetRequest:
+    properties:
+      currency:
+        maxLength: 10
+        minLength: 2
+        type: string
+      exchange:
+        maxLength: 100
+        minLength: 2
+        type: string
+      external_platform_id:
+        maxLength: 100
+        minLength: 2
+        type: string
+      instrument_type:
+        type: string
+      isin:
+        maxLength: 50
+        minLength: 10
+        type: string
+      name:
+        maxLength: 200
+        minLength: 1
+        type: string
+      symbol:
+        maxLength: 20
+        minLength: 1
+        type: string
+    required:
+    - exchange
+    - instrument_type
+    - isin
+    - name
+    - symbol
+    type: object
+  dto.UpdateAssetRequest:
+    properties:
+      currency:
+        maxLength: 10
+        minLength: 2
+        type: string
+      exchange:
+        maxLength: 100
+        minLength: 2
+        type: string
+      external_platform_id:
+        maxLength: 100
+        minLength: 2
+        type: string
+      instrument_type:
+        type: string
+      isin:
+        maxLength: 50
+        minLength: 10
+        type: string
+      name:
+        maxLength: 200
+        minLength: 1
+        type: string
+      symbol:
+        maxLength: 20
+        minLength: 1
+        type: string
+    type: object
+  model.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+      password_hash:
+        minLength: 6
+        type: string
+      updated_at:
+        type: string
+    required:
+    - email
+    - name
+    - password_hash
+    type: object
+  util.ErrorBody:
+    properties:
+      error: {}
+    type: object
+info:
+  contact: {}
+  description: API for managing users and assets in MF Stock Tracker.
+  title: MF Stock Tracker API
+  version: "1.0"
+paths:
+  /api/assets/:
+    get:
+      description: Retrieve assets with pagination
+      parameters:
+      - description: 'Number of records to return (default: 50, max: 200)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of records to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: List assets
+      tags:
+      - assets
+    post:
+      consumes:
+      - application/json
+      description: Create a new asset
+      parameters:
+      - description: Create asset payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Create asset
+      tags:
+      - assets
+  /api/assets/{assetId}:
+    delete:
+      description: Delete an asset by ID
+      parameters:
+      - description: Asset ID
+        in: path
+        name: assetId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Delete asset
+      tags:
+      - assets
+    get:
+      description: Retrieve a single asset by its ID
+      parameters:
+      - description: Asset ID
+        in: path
+        name: assetId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Get asset by ID
+      tags:
+      - assets
+    put:
+      consumes:
+      - application/json
+      description: Update an existing asset by ID
+      parameters:
+      - description: Asset ID
+        in: path
+        name: assetId
+        required: true
+        type: integer
+      - description: Update asset payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Update asset
+      tags:
+      - assets
+  /api/users/:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Create user payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Create user
+      tags:
+      - users
+  /api/users/{userId}:
+    delete:
+      description: Delete user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Delete user
+      tags:
+      - users
+schemes:
+- http
+- https
+swagger: "2.0"
