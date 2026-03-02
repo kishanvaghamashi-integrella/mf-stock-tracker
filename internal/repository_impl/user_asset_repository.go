@@ -64,17 +64,17 @@ func (r *UserAssetRepository) GetByUserID(ctx context.Context, userID int64, lim
 	return userAssets, nil
 }
 
-func (r *UserAssetRepository) Delete(ctx context.Context, id int64) error {
-	query := `DELETE FROM user_assets WHERE id = $1`
+func (r *UserAssetRepository) Delete(ctx context.Context, id, userID int64) error {
+	query := `DELETE FROM user_assets WHERE id = $1 AND user_id = $2`
 
-	res, err := r.db.Exec(ctx, query, id)
+	res, err := r.db.Exec(ctx, query, id, userID)
 	if err != nil {
 		slog.Error("failed to delete user asset", "error", err.Error())
 		return util.NewInternalError("failed to delete user asset")
 	}
 
 	if res.RowsAffected() == 0 {
-		return util.NewNotFoundError(fmt.Sprintf("user asset with id %d not found", id))
+		return util.NewNotFoundError(fmt.Sprintf("user asset with id %d not found for user %d", id, userID))
 	}
 
 	return nil

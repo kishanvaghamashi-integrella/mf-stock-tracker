@@ -109,19 +109,19 @@ func (h *UserAssetHandler) GetByUserID(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/users/{userId}/assets/{userAssetId} [delete]
 func (h *UserAssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	_, err := parseIntegerID(r, "userId")
+	userID, err := parseIntegerID(r, "userId")
 	if err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
-	id, err := parseIntegerID(r, "userAssetId")
+	userAssetID, err := parseIntegerID(r, "userAssetId")
 	if err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user asset id")
 		return
 	}
 
-	if err := h.service.Delete(r.Context(), id); err != nil {
+	if err := h.service.Delete(r.Context(), userID, userAssetID); err != nil {
 		handleError(w, err)
 		return
 	}

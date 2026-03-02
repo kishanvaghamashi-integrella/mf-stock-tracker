@@ -65,8 +65,12 @@ func (s *UserAssetService) GetByUserID(ctx context.Context, userID int64, limit,
 	return s.repo.GetByUserID(ctx, userID, limit, offset)
 }
 
-func (s *UserAssetService) Delete(ctx context.Context, id int64) error {
-	return s.repo.Delete(ctx, id)
+func (s *UserAssetService) Delete(ctx context.Context, userID, userAssetID int64) error {
+	if err := s.ensureUserExists(ctx, userID); err != nil {
+		return err
+	}
+
+	return s.repo.Delete(ctx, userAssetID, userID)
 }
 
 func (s *UserAssetService) ensureUserExists(ctx context.Context, userID int64) error {
