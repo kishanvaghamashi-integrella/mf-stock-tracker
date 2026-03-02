@@ -35,6 +35,13 @@ definitions:
     - name
     - symbol
     type: object
+  dto.CreateUserAssetRequest:
+    properties:
+      asset_id:
+        type: integer
+    required:
+    - asset_id
+    type: object
   dto.UpdateAssetRequest:
     properties:
       currency:
@@ -108,6 +115,17 @@ definitions:
     - email
     - name
     - password_hash
+    type: object
+  model.UserAsset:
+    properties:
+      asset_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      user_id:
+        type: integer
     type: object
   util.ErrorBody:
     properties:
@@ -191,6 +209,7 @@ paths:
       description: Delete an asset by ID
       parameters:
       - description: Asset ID
+        format: int64
         in: path
         name: assetId
         required: true
@@ -223,6 +242,7 @@ paths:
       description: Retrieve a single asset by its ID
       parameters:
       - description: Asset ID
+        format: int64
         in: path
         name: assetId
         required: true
@@ -255,6 +275,7 @@ paths:
       description: Update an existing asset by ID
       parameters:
       - description: Asset ID
+        format: int64
         in: path
         name: assetId
         required: true
@@ -326,6 +347,7 @@ paths:
       description: Delete user by ID
       parameters:
       - description: User ID
+        format: int64
         in: path
         name: userId
         required: true
@@ -354,6 +376,125 @@ paths:
       summary: Delete user
       tags:
       - users
+  /api/users/{userId}/assets:
+    get:
+      description: Get all asset assignments for a user with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: 'Number of records to return (default: 50, max: 200)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of records to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.UserAsset'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: List assets for a user
+      tags:
+      - user-assets
+    post:
+      consumes:
+      - application/json
+      description: Link an asset to a user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Asset assignment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.UserAsset'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Assign asset to user
+      tags:
+      - user-assets
+  /api/users/{userId}/assets/{userAssetId}:
+    delete:
+      description: Delete a user-asset link by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: User Asset ID
+        in: path
+        name: userAssetId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Remove asset assignment
+      tags:
+      - user-assets
 schemes:
 - http
 - https
