@@ -62,7 +62,7 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Param userId path int true "User ID"
 // @Param limit query int false "Number of records to return (default: 50, max: 200)"
 // @Param offset query int false "Number of records to skip (default: 0)"
-// @Success 200 {array} []model.Transaction
+// @Success 200 {array} model.Transaction
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody

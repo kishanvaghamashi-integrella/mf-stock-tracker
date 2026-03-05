@@ -6,7 +6,7 @@ CREATE TABLE transactions (
     quantity NUMERIC NOT NULL,
     price NUMERIC NOT NULL,
     txn_date TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- +goose StatementBegin
 SELECT 'up SQL query';

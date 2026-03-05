@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/kishanvaghamashi-integrella/mf-stock-tracker/docs"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/handler"
@@ -39,6 +40,16 @@ func NewServer(db *pgxpool.Pool) *App {
 	txnHandler := handler.NewTransactionHandler(txnService)
 
 	r := chi.NewRouter()
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
+
 	if isDevelopmentEnvironment() {
 		r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/swagger/index.html", http.StatusTemporaryRedirect)

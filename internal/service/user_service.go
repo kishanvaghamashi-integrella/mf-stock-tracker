@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/repository"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -28,6 +30,22 @@ func (s *UserService) Create(ctx context.Context, user *model.User) error {
 	}
 
 	return nil
+}
+
+func (s *UserService) Login(ctx context.Context, req *dto.LoginRequest) (*model.User, error) {
+	user, err := s.repo.GetByEmail(ctx, req.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, util.NewBadRequestError("invalid email or password")
+		}
+		return nil, util.NewInternalError("failed to process login")
+	}
+
+	if !util.CheckPassword(user.PasswordHash, req.Password) {
+		return nil, util.NewBadRequestError("invalid email or password")
+	}
+
+	return user, nil
 }
 
 func (s *UserService) Delete(ctx context.Context, userId int64) error {

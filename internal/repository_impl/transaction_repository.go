@@ -30,7 +30,7 @@ func (r *TransactionRepository) Create(ctx context.Context, txn *model.Transacti
 		Scan(&txn.ID, &txn.CreatedAt)
 	if err != nil {
 		slog.Error("failed to create transaction", "error", err.Error())
-		return util.NewInternalError(fmt.Sprintf("failed to create transaction - %s", err.Error()))
+		return util.NewInternalError("failed to create transaction")
 	}
 
 	return nil
@@ -61,6 +61,11 @@ func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64
 			return nil, util.NewInternalError("failed to list transactions")
 		}
 		transactions = append(transactions, txn)
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("failed to iterate transaction rows", "error", err.Error())
+		return nil, util.NewInternalError("failed to list transactions")
 	}
 
 	return transactions, nil
