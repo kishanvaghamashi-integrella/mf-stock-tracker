@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -47,6 +48,41 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.SendResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("user created with id %d", user.ID)})
+}
+
+// Login godoc
+// @Summary User login
+// @Description Authenticate user with email and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param payload body dto.LoginRequest true "Login payload"
+// @Success 200 {object} model.User
+// @Failure 400 {object} util.ErrorBody
+// @Failure 500 {object} util.ErrorBody
+// @Router /api/users/login [post]
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var req dto.LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.SendErrorResponse(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := util.Validate.Struct(req); err != nil {
+		util.SendErrorResponse(w, http.StatusBadRequest, util.FormatValidationErrors(err))
+		return
+	}
+
+	user, err := h.service.Login(r.Context(), &req)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	util.SendResponse(w, http.StatusOK, map[string]any{
+		"message": "login successful",
+		"user":    user,
+	})
 }
 
 // Delete godoc

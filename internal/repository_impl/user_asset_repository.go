@@ -91,3 +91,15 @@ func (r *UserAssetRepository) IsUserAssetExits(ctx context.Context, userID int64
 
 	return exists, nil
 }
+
+func (r *UserAssetRepository) ExistsByID(ctx context.Context, id int64) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM user_assets WHERE id = $1)`
+
+	var exists bool
+	if err := r.db.QueryRow(ctx, query, id).Scan(&exists); err != nil {
+		slog.Error("failed to check user asset existence", "error", err.Error())
+		return false, util.NewInternalError("failed to check user asset existence")
+	}
+
+	return exists, nil
+}

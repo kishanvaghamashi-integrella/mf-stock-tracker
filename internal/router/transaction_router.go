@@ -7,12 +7,13 @@ import (
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/handler"
 )
 
-func NewUserRouter(handler *handler.UserHandler) http.Handler {
+func NewTransactionRouter(handler *handler.TransactionHandler) http.Handler {
 	router := chi.NewRouter()
 
 	router.Post("/", handler.Create)
-	router.Post("/login", handler.Login)
-	router.Delete("/{userId}", handler.Delete)
+	router.Get("/user/{userId}", handler.GetAllByUserID)
+	router.Put("/{txnId}", handler.Update)
+	router.Delete("/{txnId}", handler.Delete)
 
 	return router
 }

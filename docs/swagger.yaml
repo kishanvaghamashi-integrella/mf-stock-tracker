@@ -35,12 +35,42 @@ definitions:
     - name
     - symbol
     type: object
+  dto.CreateTransactionRequest:
+    properties:
+      price:
+        type: number
+      quantity:
+        type: number
+      txn_date:
+        type: string
+      txn_type:
+        type: string
+      user_asset_id:
+        type: integer
+    required:
+    - price
+    - quantity
+    - txn_date
+    - txn_type
+    - user_asset_id
+    type: object
   dto.CreateUserAssetRequest:
     properties:
       asset_id:
         type: integer
     required:
     - asset_id
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
     type: object
   dto.UpdateAssetRequest:
     properties:
@@ -71,6 +101,17 @@ definitions:
         minLength: 1
         type: string
     type: object
+  dto.UpdateTransactionRequest:
+    properties:
+      price:
+        type: number
+      quantity:
+        type: number
+      txn_date:
+        type: string
+      txn_type:
+        type: string
+    type: object
   model.Asset:
     properties:
       created_at:
@@ -91,6 +132,23 @@ definitions:
         type: string
       symbol:
         type: string
+    type: object
+  model.Transaction:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      price:
+        type: number
+      quantity:
+        type: number
+      txn_date:
+        type: string
+      txn_type:
+        type: string
+      user_asset_id:
+        type: integer
     type: object
   model.User:
     properties:
@@ -310,6 +368,157 @@ paths:
       summary: Update asset
       tags:
       - assets
+  /api/transactions:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction for a user asset
+      parameters:
+      - description: Create transaction payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Create transaction
+      tags:
+      - transactions
+  /api/transactions/{txnId}:
+    delete:
+      description: Delete a transaction by its ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: txnId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Delete transaction
+      tags:
+      - transactions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing transaction by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: txnId
+        required: true
+        type: integer
+      - description: Update transaction payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: Update transaction
+      tags:
+      - transactions
+  /api/transactions/user/{userId}:
+    get:
+      description: Get all transactions across all user assets for a given user with
+        pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: 'Number of records to return (default: 50, max: 200)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of records to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.Transaction'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: List transactions for a user
+      tags:
+      - transactions
   /api/users/:
     post:
       consumes:
@@ -495,6 +704,36 @@ paths:
       summary: Remove asset assignment
       tags:
       - user-assets
+  /api/users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      summary: User login
+      tags:
+      - users
 schemes:
 - http
 - https

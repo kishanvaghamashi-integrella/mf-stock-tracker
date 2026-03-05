@@ -11,6 +11,11 @@ func init() {
 		val := fl.Field().String()
 		return val == "stock" || val == "mutual_fund"
 	})
+
+	Validate.RegisterValidation("txn_type", func(fl validator.FieldLevel) bool {
+		val := fl.Field().String()
+		return val == "BUY" || val == "SELL"
+	})
 }
 
 type ValidationError struct {
@@ -57,6 +62,8 @@ func getErrorMessage(e validator.FieldError) string {
 	// Custom validation errors
 	case "instrument_type":
 		return "Invalid instrument type, must be 'stock' or 'mutual_fund'"
+	case "txn_type":
+		return "Invalid transaction type, must be 'BUY' or 'SELL'"
 
 	default:
 		return "Invalid value for " + e.Tag()

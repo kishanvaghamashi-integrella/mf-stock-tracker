@@ -60,6 +60,25 @@ func (r *UserRepository) Delete(ctx context.Context, userId int64) error {
 	return nil
 }
 
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	query := `
+		SELECT id, name, email, password_hash, is_active, created_at, updated_at
+		FROM users
+		WHERE email = $1 AND is_active = TRUE
+	`
+
+	var user model.User
+	err := r.db.QueryRow(ctx, query, email).Scan(
+		&user.ID, &user.Name, &user.Email, &user.PasswordHash,
+		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) ExistsByID(ctx context.Context, id int64) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 AND is_active = TRUE)`
 
