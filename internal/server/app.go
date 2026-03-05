@@ -24,16 +24,19 @@ func NewServer(db *pgxpool.Pool) *App {
 	userRepo := repositoryimpl.NewUserRepository(db)
 	assetRepo := repositoryimpl.NewAssetRepository(db)
 	userAssetRepo := repositoryimpl.NewUserAssetRepository(db)
+	txnRepo := repositoryimpl.NewTransactionRepository(db)
 
 	// Service
 	userService := service.NewUserService(userRepo)
 	assetService := service.NewAssetService(assetRepo)
 	userAssetService := service.NewUserAssetService(userAssetRepo, userRepo, assetRepo)
+	txnService := service.NewTransactionService(txnRepo, userAssetRepo, userRepo)
 
 	// Handler
 	userHandler := handler.NewUserService(userService)
 	assetHandler := handler.NewAssetHandler(assetService)
 	userAssetHandler := handler.NewUserAssetHandler(userAssetService)
+	txnHandler := handler.NewTransactionHandler(txnService)
 
 	r := chi.NewRouter()
 	if isDevelopmentEnvironment() {
@@ -45,6 +48,7 @@ func NewServer(db *pgxpool.Pool) *App {
 	r.Mount("/api/users", router.NewUserRouter(userHandler))
 	r.Mount("/api/assets", router.NewAssetRouter(assetHandler))
 	r.Mount("/api/users/{userId}/assets", router.NewUserAssetRouter(userAssetHandler))
+	r.Mount("/api/transactions", router.NewTransactionRouter(txnHandler))
 	return &App{Router: r}
 }
 
