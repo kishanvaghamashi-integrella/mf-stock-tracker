@@ -18,12 +18,17 @@ func NewUserService(repo repository.UserRepositoryInterface) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) Create(ctx context.Context, user *model.User) error {
-	newHashedPassword, err := util.HashPassword(user.PasswordHash)
+func (s *UserService) Create(ctx context.Context, req *dto.CreateUserRequest) error {
+	newHashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
 		return err
 	}
-	user.PasswordHash = newHashedPassword
+
+	user := &model.User{
+		Name:         req.Name,
+		Email:        req.Email,
+		PasswordHash: newHashedPassword,
+	}
 
 	if err := s.repo.Create(ctx, user); err != nil {
 		return err

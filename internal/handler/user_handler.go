@@ -2,11 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
-	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
 )
@@ -25,29 +23,29 @@ func NewUserService(service *service.UserService) *UserHandler {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param payload body model.User true "Create user payload"
+// @Param payload body dto.CreateUserRequest true "Create user payload"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/users/ [post]
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var user model.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var req dto.CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	if err := util.Validate.Struct(user); err != nil {
+	if err := util.Validate.Struct(req); err != nil {
 		util.SendErrorResponse(w, http.StatusBadRequest, util.FormatValidationErrors(err))
 		return
 	}
 
-	if err := h.service.Create(r.Context(), &user); err != nil {
-		util.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
+	if err := h.service.Create(r.Context(), &req); err != nil {
+		handleError(w, err)
 		return
 	}
 
-	util.SendResponse(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("user created with id %d", user.ID)})
+	util.SendResponse(w, http.StatusOK, map[string]string{"message": "user created successfully"})
 }
 
 // Login godoc

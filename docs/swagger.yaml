@@ -61,6 +61,22 @@ definitions:
     required:
     - asset_id
     type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -500,9 +516,7 @@ paths:
           description: OK
           schema:
             items:
-              items:
-                $ref: '#/definitions/model.Transaction'
-              type: array
+              $ref: '#/definitions/model.Transaction'
             type: array
         "400":
           description: Bad Request
@@ -530,7 +544,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/model.User'
+          $ref: '#/definitions/dto.CreateUserRequest'
       produces:
       - application/json
       responses:
