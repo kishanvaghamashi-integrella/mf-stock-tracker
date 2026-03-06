@@ -30,6 +30,7 @@ func NewAssetHandler(service *service.AssetService) *AssetHandler {
 // @Failure 409 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/assets/ [post]
+// @Security BearerAuth
 func (h *AssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var createAssetDto dto.CreateAssetRequest
 	if err := json.NewDecoder(r.Body).Decode(&createAssetDto); err != nil {
@@ -65,6 +66,7 @@ func (h *AssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/assets/{assetId} [get]
+// @Security BearerAuth
 func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := parseIntegerID(r, "assetId")
 	if err != nil {
@@ -92,6 +94,7 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/assets/ [get]
+// @Security BearerAuth
 func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	limit, offset, err := parsePaginationParams(r)
 	if err != nil {
@@ -121,6 +124,7 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/assets/{assetId} [put]
+// @Security BearerAuth
 func (h *AssetHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseIntegerID(r, "assetId")
 	if err != nil {
@@ -158,6 +162,7 @@ func (h *AssetHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/assets/{assetId} [delete]
+// @Security BearerAuth
 func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseIntegerID(r, "assetId")
 	if err != nil {

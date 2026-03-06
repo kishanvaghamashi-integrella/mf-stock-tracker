@@ -20,6 +20,10 @@ import (
 // @description API for managing users and assets in MF Stock Tracker.
 // @BasePath /
 // @schemes http https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
 	// Loading `.env` file

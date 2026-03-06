@@ -30,11 +30,12 @@ func NewUserAssetHandler(service *service.UserAssetService) *UserAssetHandler {
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
-// @Router /api/users/{userId}/assets [post]
+// @Router /api/user-assets [post]
+// @Security BearerAuth
 func (h *UserAssetHandler) Create(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIntegerID(r, "userId")
-	if err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user id")
+	userID, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}
 
@@ -73,11 +74,12 @@ func (h *UserAssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
-// @Router /api/users/{userId}/assets [get]
+// @Router /api/user-assets [get]
+// @Security BearerAuth
 func (h *UserAssetHandler) GetByUserID(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIntegerID(r, "userId")
-	if err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user id")
+	userID, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}
 
@@ -107,11 +109,12 @@ func (h *UserAssetHandler) GetByUserID(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
-// @Router /api/users/{userId}/assets/{userAssetId} [delete]
+// @Router /api/user-assets/{userAssetId} [delete]
+// @Security BearerAuth
 func (h *UserAssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIntegerID(r, "userId")
-	if err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user id")
+	userID, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}
 

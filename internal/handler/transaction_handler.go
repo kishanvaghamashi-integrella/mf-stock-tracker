@@ -30,6 +30,7 @@ func NewTransactionHandler(service *service.TransactionService) *TransactionHand
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/transactions [post]
+// @Security BearerAuth
 func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -66,11 +67,12 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
-// @Router /api/transactions/user/{userId} [get]
+// @Router /api/transactions [get]
+// @Security BearerAuth
 func (h *TransactionHandler) GetAllByUserID(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseIntegerID(r, "userId")
-	if err != nil {
-		util.SendErrorResponse(w, http.StatusBadRequest, "invalid user id")
+	userID, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}
 
@@ -102,6 +104,7 @@ func (h *TransactionHandler) GetAllByUserID(w http.ResponseWriter, r *http.Reque
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/transactions/{txnId} [put]
+// @Security BearerAuth
 func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseIntegerID(r, "txnId")
 	if err != nil {
@@ -139,6 +142,7 @@ func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/transactions/{txnId} [delete]
+// @Security BearerAuth
 func (h *TransactionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseIntegerID(r, "txnId")
 	if err != nil {

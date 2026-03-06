@@ -55,7 +55,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param payload body dto.LoginRequest true "Login payload"
-// @Success 200 {object} model.User
+// @Success 200 {object} dto.LoginResponse
 // @Failure 400 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/users/login [post]
@@ -77,9 +77,20 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := util.GenerateToken(user.ID, user.Email)
+	if err != nil {
+		util.SendErrorResponse(w, http.StatusInternalServerError, "failed to generate token")
+		return
+	}
+
 	util.SendResponse(w, http.StatusOK, map[string]any{
-		"message": "login successful",
-		"user":    user,
+		"message": "user created successfully",
+		"user": dto.LoginResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+			Token: token,
+		},
 	})
 }
 
@@ -94,9 +105,10 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/users/{userId} [delete]
+// @Security BearerAuth
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	userId, err := parseIntegerID(r, "userId")
-	if err != nil {
+	userId, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
 		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
 		return
 	}

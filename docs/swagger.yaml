@@ -88,6 +88,17 @@ definitions:
     - email
     - password
     type: object
+  dto.LoginResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      token:
+        type: string
+    type: object
   dto.UpdateAssetRequest:
     properties:
       currency:
@@ -166,30 +177,6 @@ definitions:
       user_asset_id:
         type: integer
     type: object
-  model.User:
-    properties:
-      created_at:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      is_active:
-        type: boolean
-      name:
-        maxLength: 50
-        minLength: 3
-        type: string
-      password_hash:
-        minLength: 6
-        type: string
-      updated_at:
-        type: string
-    required:
-    - email
-    - name
-    - password_hash
-    type: object
   model.UserAsset:
     properties:
       asset_id:
@@ -242,6 +229,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: List assets
       tags:
       - assets
@@ -275,6 +264,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Create asset
       tags:
       - assets
@@ -309,6 +300,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Delete asset
       tags:
       - assets
@@ -340,6 +333,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Get asset by ID
       tags:
       - assets
@@ -381,10 +376,55 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Update asset
       tags:
       - assets
   /api/transactions:
+    get:
+      description: Get all transactions across all user assets for a given user with
+        pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: 'Number of records to return (default: 50, max: 200)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of records to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Transaction'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
+      summary: List transactions for a user
+      tags:
+      - transactions
     post:
       consumes:
       - application/json
@@ -415,6 +455,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Create transaction
       tags:
       - transactions
@@ -448,6 +490,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Delete transaction
       tags:
       - transactions
@@ -488,13 +532,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Update transaction
       tags:
       - transactions
-  /api/transactions/user/{userId}:
+  /api/user-assets:
     get:
-      description: Get all transactions across all user assets for a given user with
-        pagination
+      description: Get all asset assignments for a user with pagination
       parameters:
       - description: User ID
         in: path
@@ -516,7 +561,9 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Transaction'
+              items:
+                $ref: '#/definitions/model.UserAsset'
+              type: array
             type: array
         "400":
           description: Bad Request
@@ -530,9 +577,91 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
-      summary: List transactions for a user
+      security:
+      - BearerAuth: []
+      summary: List assets for a user
       tags:
-      - transactions
+      - user-assets
+    post:
+      consumes:
+      - application/json
+      description: Link an asset to a user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Asset assignment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.UserAsset'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
+      summary: Assign asset to user
+      tags:
+      - user-assets
+  /api/user-assets/{userAssetId}:
+    delete:
+      description: Delete a user-asset link by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: User Asset ID
+        in: path
+        name: userAssetId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
+      summary: Remove asset assignment
+      tags:
+      - user-assets
   /api/users/:
     post:
       consumes:
@@ -596,128 +725,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
       summary: Delete user
       tags:
       - users
-  /api/users/{userId}/assets:
-    get:
-      description: Get all asset assignments for a user with pagination
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: 'Number of records to return (default: 50, max: 200)'
-        in: query
-        name: limit
-        type: integer
-      - description: 'Number of records to skip (default: 0)'
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              items:
-                $ref: '#/definitions/model.UserAsset'
-              type: array
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-      summary: List assets for a user
-      tags:
-      - user-assets
-    post:
-      consumes:
-      - application/json
-      description: Link an asset to a user
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: Asset assignment payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateUserAssetRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.UserAsset'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-      summary: Assign asset to user
-      tags:
-      - user-assets
-  /api/users/{userId}/assets/{userAssetId}:
-    delete:
-      description: Delete a user-asset link by its ID
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: integer
-      - description: User Asset ID
-        in: path
-        name: userAssetId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-      summary: Remove asset assignment
-      tags:
-      - user-assets
   /api/users/login:
     post:
       consumes:
@@ -736,7 +748,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.User'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -751,4 +763,10 @@ paths:
 schemes:
 - http
 - https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

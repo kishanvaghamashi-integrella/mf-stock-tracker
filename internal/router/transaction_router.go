@@ -11,7 +11,7 @@ func NewTransactionRouter(handler *handler.TransactionHandler) http.Handler {
 	router := chi.NewRouter()
 
 	router.Post("/", handler.Create)
-	router.Get("/user/{userId}", handler.GetAllByUserID)
+	router.Get("/", handler.GetAllByUserID)
 	router.Put("/{txnId}", handler.Update)
 	router.Delete("/{txnId}", handler.Delete)
 
