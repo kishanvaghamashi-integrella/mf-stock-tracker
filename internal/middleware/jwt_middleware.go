@@ -15,8 +15,9 @@ func JWTAuth(next http.Handler) http.Handler {
 		path   string
 		prefix bool
 	}{
-		{"", "/swagger", true}, // "" matching any method
-		{"", "/api/users", true},
+		{"", "/swagger", true},              // "" matching any method
+		{"POST", "/api/users/", false},      // user creation
+		{"POST", "/api/users/login", false}, // user login
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

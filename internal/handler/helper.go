@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -12,10 +13,16 @@ func parseIntegerID(r *http.Request, param string) (int64, error) {
 	return strconv.ParseInt(r.PathValue(param), 10, 64)
 }
 
-func handleError(w http.ResponseWriter, err error) {
+func handleError(w http.ResponseWriter, err error, handler string) {
 	if appErr, ok := err.(*util.AppError); ok {
+		if appErr.Code >= http.StatusInternalServerError {
+			slog.Error("server error", "handler", handler, "status", appErr.Code, "error", appErr.Message)
+		} else {
+			slog.Warn("client error", "handler", handler, "status", appErr.Code, "error", appErr.Message)
+		}
 		util.SendErrorResponse(w, int(appErr.Code), appErr.Message)
 	} else {
+		slog.Error("unexpected error", "handler", handler, "error", err)
 		util.SendErrorResponse(w, http.StatusInternalServerError, "unexpected error")
 	}
 }
