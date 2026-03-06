@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/kishanvaghamashi-integrella/mf-stock-tracker/docs"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/handler"
+	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/middleware"
 	repositoryimpl "github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/repository_impl"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/router"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
@@ -50,15 +51,18 @@ func NewServer(db *pgxpool.Pool) *App {
 		MaxAge:           300,
 	}))
 
+	r.Use(middleware.JWTAuth)
+
 	if isDevelopmentEnvironment() {
 		r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/swagger/index.html", http.StatusTemporaryRedirect)
 		})
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 	}
+
 	r.Mount("/api/users", router.NewUserRouter(userHandler))
 	r.Mount("/api/assets", router.NewAssetRouter(assetHandler))
-	r.Mount("/api/users/{userId}/assets", router.NewUserAssetRouter(userAssetHandler))
+	r.Mount("/api/user-assets", router.NewUserAssetRouter(userAssetHandler))
 	r.Mount("/api/transactions", router.NewTransactionRouter(txnHandler))
 	return &App{Router: r}
 }

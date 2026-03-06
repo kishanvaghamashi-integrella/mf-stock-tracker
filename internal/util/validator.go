@@ -49,9 +49,9 @@ func getErrorMessage(e validator.FieldError) string {
 	case "email":
 		return "Invalid email format"
 	case "min":
-		return "Value is too short, minimum is " + e.Param()
+		return "Value is too short, minimum length/value is " + e.Param()
 	case "max":
-		return "Value is too long, maximum is " + e.Param()
+		return "Value is too long, maximum length/value is " + e.Param()
 	case "e164":
 		return "Invalid phone number format (use E.164 format, e.g., +14155552671)"
 	case "gte":
