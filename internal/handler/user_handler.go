@@ -106,6 +106,50 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Verify godoc
+// @Summary Verify token
+// @Description Verify bearer token and return user info
+// @Tags users
+// @Produce json
+// @Success 200 {object} dto.LoginResponse
+// @Failure 400 {object} util.ErrorBody
+// @Failure 404 {object} util.ErrorBody
+// @Failure 500 {object} util.ErrorBody
+// @Router /api/users/verify [get]
+// @Security BearerAuth
+func (h *UserHandler) Verify(w http.ResponseWriter, r *http.Request) {
+	slog.Info("request started", "handler", "UserHandler.Verify", "method", r.Method, "path", r.URL.Path)
+
+	userID, ok := util.GetUserIDFromContext(r.Context())
+	if !ok {
+		slog.Warn("failed to parse user ID from context", "handler", "UserHandler.Verify")
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
+		return
+	}
+
+	user, err := h.service.GetByID(r.Context(), userID)
+	if err != nil {
+		handleError(w, err, "UserHandler.Verify")
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if len(token) > 7 {
+		token = token[7:]
+	}
+
+	slog.Info("token verified successfully", "handler", "UserHandler.Verify", "userID", userID)
+	util.SendResponse(w, http.StatusOK, map[string]any{
+		"message": "token is valid",
+		"user": dto.LoginResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+			Token: token,
+		},
+	})
+}
+
 // Delete godoc
 // @Summary Delete user
 // @Description Delete user by ID

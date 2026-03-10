@@ -12,6 +12,7 @@ func NewUserRouter(handler *handler.UserHandler) http.Handler {
 
 	router.Post("/", handler.Create)
 	router.Post("/login", handler.Login)
+	router.Get("/verify", handler.Verify)
 	router.Delete("/", handler.Delete)
 
 	return router
