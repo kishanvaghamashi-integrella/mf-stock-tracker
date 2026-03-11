@@ -44,7 +44,7 @@ Always include these structured fields:
 ## Error Handling
 
 - Use `util.AppError` for all domain errors. Create via `NewNotFoundError()`, `NewBadRequestError()`, `NewInternalError()`.
-- Services return `*AppError`; handlers call `handleError(w, err, "HandlerName.Method")` which logs and responds.
+- Services return `*AppError`; handlers call `util.HandleError(w, err, "HandlerName.Method")` which logs and responds.
 - Never expose raw internal errors to clients — wrap them in `AppError`.
 
 ## Request/Response

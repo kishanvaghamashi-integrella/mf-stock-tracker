@@ -53,12 +53,9 @@ func (s *UserService) Login(ctx context.Context, req *dto.LoginRequest) (*model.
 	return user, nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, id int64) (*model.User, *util.AppError) {
+func (s *UserService) GetByID(ctx context.Context, id int64) (*model.User, error) {
 	user, err := s.repo.GetByID(ctx, id)
-	if err != nil {
-		return nil, util.NewNotFoundError("user not found")
-	}
-	return user, nil
+	return user, err
 }
 
 func (s *UserService) Delete(ctx context.Context, userId int64) error {

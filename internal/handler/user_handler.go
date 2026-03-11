@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strings"
 
+	"github.com/gobwas/glob/util/strings"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -46,7 +48,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Create(r.Context(), &req); err != nil {
-		handleError(w, err, "UserHandler.Create")
+		util.HandleError(w, err, "UserHandler.Create")
 		return
 	}
 
@@ -61,7 +63,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param payload body dto.LoginRequest true "Login payload"
-// @Success 200 {object} dto.LoginResponse
+// @Success 200 {object} map[string]string
 // @Failure 400 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
 // @Router /api/users/login [post]
@@ -83,7 +85,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.Login(r.Context(), &req)
 	if err != nil {
-		handleError(w, err, "UserHandler.Login")
+		util.HandleError(w, err, "UserHandler.Login")
 		return
 	}
 
@@ -111,7 +113,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Description Verify bearer token and return user info
 // @Tags users
 // @Produce json
-// @Success 200 {object} dto.LoginResponse
+// @Success 200 {object} map[string]string
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
@@ -129,12 +131,13 @@ func (h *UserHandler) Verify(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.GetByID(r.Context(), userID)
 	if err != nil {
-		handleError(w, err, "UserHandler.Verify")
+		util.HandleError(w, err, "UserHandler.Verify")
 		return
 	}
 
 	token := r.Header.Get("Authorization")
-	if len(token) > 7 {
+
+	if strings.HasPrefix(token, "Bearer ") {
 		token = token[7:]
 	}
 
@@ -172,7 +175,7 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), userId); err != nil {
-		handleError(w, err, "UserHandler.Delete")
+		util.HandleError(w, err, "UserHandler.Delete")
 		return
 	}
 

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -92,6 +93,9 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, er
 		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
 	)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, util.NewNotFoundError("User not found")
+		}
 		return nil, err
 	}
 

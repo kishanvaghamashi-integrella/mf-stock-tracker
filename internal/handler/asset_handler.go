@@ -50,7 +50,7 @@ func (h *AssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	asset, err := h.service.Create(r.Context(), &createAssetDto)
 	if err != nil {
-		handleError(w, err, "AssetHandler.Create")
+		util.HandleError(w, err, "AssetHandler.Create")
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	asset, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		handleError(w, err, "AssetHandler.GetByID")
+		util.HandleError(w, err, "AssetHandler.GetByID")
 		return
 	}
 
@@ -117,7 +117,7 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	assets, err := h.service.GetAll(r.Context(), limit, offset)
 	if err != nil {
-		handleError(w, err, "AssetHandler.GetAll")
+		util.HandleError(w, err, "AssetHandler.GetAll")
 		return
 	}
 
@@ -163,7 +163,7 @@ func (h *AssetHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Update(r.Context(), id, &updateAssetDto); err != nil {
-		handleError(w, err, "AssetHandler.Update")
+		util.HandleError(w, err, "AssetHandler.Update")
 		return
 	}
 
@@ -194,7 +194,7 @@ func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), id); err != nil {
-		handleError(w, err, "AssetHandler.Delete")
+		util.HandleError(w, err, "AssetHandler.Delete")
 		return
 	}
 
