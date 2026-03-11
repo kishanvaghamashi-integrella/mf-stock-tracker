@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gobwas/glob/util/strings"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/service"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -137,9 +136,7 @@ func (h *UserHandler) Verify(w http.ResponseWriter, r *http.Request) {
 
 	token := r.Header.Get("Authorization")
 
-	if strings.HasPrefix(token, "Bearer ") {
-		token = token[7:]
-	}
+	token = strings.TrimPrefix(token, "Bearer ")
 
 	slog.Info("token verified successfully", "handler", "UserHandler.Verify", "userID", userID)
 	util.SendResponse(w, http.StatusOK, map[string]any{
