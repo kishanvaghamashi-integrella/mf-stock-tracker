@@ -50,7 +50,7 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	txn, err := h.service.Create(r.Context(), &req)
 	if err != nil {
-		handleError(w, err, "TransactionHandler.Create")
+		util.HandleError(w, err, "TransactionHandler.Create")
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *TransactionHandler) GetAllByUserID(w http.ResponseWriter, r *http.Reque
 
 	transactions, err := h.service.GetAllByUserID(r.Context(), userID, limit, offset)
 	if err != nil {
-		handleError(w, err, "TransactionHandler.GetAllByUserID")
+		util.HandleError(w, err, "TransactionHandler.GetAllByUserID")
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Update(r.Context(), id, &req); err != nil {
-		handleError(w, err, "TransactionHandler.Update")
+		util.HandleError(w, err, "TransactionHandler.Update")
 		return
 	}
 
@@ -170,7 +170,7 @@ func (h *TransactionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), id); err != nil {
-		handleError(w, err, "TransactionHandler.Delete")
+		util.HandleError(w, err, "TransactionHandler.Delete")
 		return
 	}
 

@@ -57,7 +57,7 @@ func (h *UserAssetHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	userAsset, err := h.service.Create(r.Context(), userID, &req)
 	if err != nil {
-		handleError(w, err, "UserAssetHandler.Create")
+		util.HandleError(w, err, "UserAssetHandler.Create")
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *UserAssetHandler) GetByUserID(w http.ResponseWriter, r *http.Request) {
 
 	userAssets, err := h.service.GetByUserID(r.Context(), userID, limit, offset)
 	if err != nil {
-		handleError(w, err, "UserAssetHandler.GetByUserID")
+		util.HandleError(w, err, "UserAssetHandler.GetByUserID")
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *UserAssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), userID, userAssetID); err != nil {
-		handleError(w, err, "UserAssetHandler.Delete")
+		util.HandleError(w, err, "UserAssetHandler.Delete")
 		return
 	}
 

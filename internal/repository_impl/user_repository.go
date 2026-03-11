@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -73,6 +74,28 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
 	)
 	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepository) GetByID(ctx context.Context, id int64) (*model.User, error) {
+	query := `
+		SELECT id, name, email, password_hash, is_active, created_at, updated_at
+		FROM users
+		WHERE id = $1 AND is_active = TRUE
+	`
+
+	var user model.User
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&user.ID, &user.Name, &user.Email, &user.PasswordHash,
+		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, util.NewNotFoundError("User not found")
+		}
 		return nil, err
 	}
 

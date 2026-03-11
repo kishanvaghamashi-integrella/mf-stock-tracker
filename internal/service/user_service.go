@@ -53,6 +53,11 @@ func (s *UserService) Login(ctx context.Context, req *dto.LoginRequest) (*model.
 	return user, nil
 }
 
+func (s *UserService) GetByID(ctx context.Context, id int64) (*model.User, error) {
+	user, err := s.repo.GetByID(ctx, id)
+	return user, err
+}
+
 func (s *UserService) Delete(ctx context.Context, userId int64) error {
 	err := s.repo.Delete(ctx, userId)
 	return err
