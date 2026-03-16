@@ -831,7 +831,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -868,7 +871,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -942,13 +948,16 @@ const docTemplate = `{
         "dto.CreateTransactionRequest": {
             "type": "object",
             "required": [
+                "asset_id",
                 "price",
                 "quantity",
                 "txn_date",
-                "txn_type",
-                "user_asset_id"
+                "txn_type"
             ],
             "properties": {
+                "asset_id": {
+                    "type": "integer"
+                },
                 "price": {
                     "type": "number"
                 },
@@ -960,9 +969,6 @@ const docTemplate = `{
                 },
                 "txn_type": {
                     "type": "string"
-                },
-                "user_asset_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -1012,23 +1018,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
-                }
-            }
-        },
-        "dto.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
                 }
             }
         },

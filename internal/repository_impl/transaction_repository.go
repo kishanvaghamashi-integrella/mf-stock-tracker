@@ -19,18 +19,56 @@ func NewTransactionRepository(db *pgxpool.Pool) *TransactionRepository {
 	return &TransactionRepository{db: db}
 }
 
-func (r *TransactionRepository) Create(ctx context.Context, txn *model.Transaction) error {
-	query := `
+func (r *TransactionRepository) Create(ctx context.Context, txn *model.Transaction, holding *model.Holding, isUpdate bool) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		slog.Error("failed to begin transaction", "error", err.Error())
+		return util.NewInternalError("failed to begin transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	txnQuery := `
 		INSERT INTO transactions (user_asset_id, txn_type, quantity, price, txn_date)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at
 	`
-
-	err := r.db.QueryRow(ctx, query, txn.UserAssetID, txn.TxnType, txn.Quantity, txn.Price, txn.TxnDate).
+	err = tx.QueryRow(ctx, txnQuery, txn.UserAssetID, txn.TxnType, txn.Quantity, txn.Price, txn.TxnDate).
 		Scan(&txn.ID, &txn.CreatedAt)
 	if err != nil {
-		slog.Error("failed to create transaction", "error", err.Error())
+		slog.Error("failed to insert transaction", "error", err.Error())
 		return util.NewInternalError("failed to create transaction")
+	}
+
+	if isUpdate {
+		holdingQuery := `
+			UPDATE holdings
+			SET total_quantity = $1, average_price = $2, total_invested = $3, updated_at = now()
+			WHERE user_asset_id = $4
+			RETURNING updated_at
+		`
+		err = tx.QueryRow(ctx, holdingQuery, holding.TotalQuantity, holding.AveragePrice, holding.TotalInvested, holding.UserAssetID).
+			Scan(&holding.UpdatedAt)
+		if err != nil {
+			slog.Error("failed to update holding", "error", err.Error())
+			return util.NewInternalError("failed to update holding")
+		}
+	} else {
+		holdingQuery := `
+			INSERT INTO holdings (user_asset_id, total_quantity, average_price, total_invested)
+			VALUES ($1, $2, $3, $4)
+			RETURNING id, updated_at
+		`
+		err = tx.QueryRow(ctx, holdingQuery, holding.UserAssetID, holding.TotalQuantity, holding.AveragePrice, holding.TotalInvested).
+			Scan(&holding.ID, &holding.UpdatedAt)
+		if err != nil {
+			slog.Error("failed to insert holding", "error", err.Error())
+			return util.NewInternalError("failed to create holding")
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		slog.Error("failed to commit transaction", "error", err.Error())
+		return util.NewInternalError("failed to commit transaction")
 	}
 
 	return nil
@@ -69,6 +107,27 @@ func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64
 	}
 
 	return transactions, nil
+}
+
+func (r *TransactionRepository) GetHoldingsByUserAssetID(ctx context.Context, userAssetID int64) (*model.Holding, error) {
+	query := `
+		SELECT id, user_asset_id, total_quantity, average_price, total_invested, updated_at
+		FROM holdings
+		WHERE user_asset_id = $1
+	`
+
+	var holding model.Holding
+	err := r.db.QueryRow(ctx, query, userAssetID).
+		Scan(&holding.ID, &holding.UserAssetID, &holding.TotalQuantity, &holding.AveragePrice, &holding.TotalInvested, &holding.UpdatedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		slog.Error("failed to get holding by user asset id", "error", err.Error())
+		return nil, util.NewInternalError("failed to get holding")
+	}
+
+	return &holding, nil
 }
 
 func (r *TransactionRepository) GetByID(ctx context.Context, id int64) (*model.Transaction, error) {

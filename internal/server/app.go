@@ -32,7 +32,7 @@ func NewServer(db *pgxpool.Pool) *App {
 	userService := service.NewUserService(userRepo)
 	assetService := service.NewAssetService(assetRepo)
 	userAssetService := service.NewUserAssetService(userAssetRepo, userRepo, assetRepo)
-	txnService := service.NewTransactionService(txnRepo, userAssetRepo, userRepo)
+	txnService := service.NewTransactionService(txnRepo, userAssetRepo, userRepo, assetRepo)
 
 	// Handler
 	userHandler := handler.NewUserService(userService)

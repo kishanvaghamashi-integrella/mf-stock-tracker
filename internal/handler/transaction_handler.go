@@ -48,7 +48,14 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	txn, err := h.service.Create(r.Context(), &req)
+	userId, ok := util.GetUserIDFromContext(r.Context())
+	if ok == false {
+		slog.Warn("failed to parse user ID from context", "handler", "TransactionHandler.Create")
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
+		return
+	}
+
+	txn, err := h.service.Create(r.Context(), &req, userId)
 	if err != nil {
 		util.HandleError(w, err, "TransactionHandler.Create")
 		return
