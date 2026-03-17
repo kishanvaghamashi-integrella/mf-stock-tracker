@@ -17,3 +17,14 @@ type UpdateTransactionRequest struct {
 	Price    *float64   `json:"price" validate:"omitempty,gt=0"`
 	TxnDate  *time.Time `json:"txn_date" validate:"omitempty"`
 }
+
+type ResponseTransactionDto struct {
+	ID                  int64     `json:"id"`
+	UserAssetID         int64     `json:"user_asset_id"`
+	AssetName           string    `json:"asset_name"`
+	AssetInstrumentType string    `json:"asset_instrument_type"`
+	TxnType             string    `json:"txn_type"`
+	Quantity            float64   `json:"quantity"`
+	Price               float64   `json:"price"`
+	TxnDate             time.Time `json:"txn_date"`
+}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/dto"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
 )
@@ -74,11 +75,12 @@ func (r *TransactionRepository) Create(ctx context.Context, txn *model.Transacti
 	return nil
 }
 
-func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64, limit, offset int) ([]model.Transaction, error) {
+func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64, limit, offset int) ([]dto.ResponseTransactionDto, error) {
 	query := `
-		SELECT t.id, t.user_asset_id, t.txn_type, t.quantity, t.price, t.txn_date, t.created_at
+		SELECT t.id, t.user_asset_id, a.name, a.instrument_type, t.txn_type, t.quantity, t.price, t.txn_date
 		FROM transactions t
 		INNER JOIN user_assets ua ON t.user_asset_id = ua.id
+		INNER JOIN assets a ON a.id = ua.asset_id
 		WHERE ua.user_id = $1
 		ORDER BY t.txn_date DESC, t.id DESC
 		LIMIT $2 OFFSET $3
@@ -91,10 +93,10 @@ func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64
 	}
 	defer rows.Close()
 
-	var transactions []model.Transaction
+	var transactions []dto.ResponseTransactionDto
 	for rows.Next() {
-		var txn model.Transaction
-		if err := rows.Scan(&txn.ID, &txn.UserAssetID, &txn.TxnType, &txn.Quantity, &txn.Price, &txn.TxnDate, &txn.CreatedAt); err != nil {
+		var txn dto.ResponseTransactionDto
+		if err := rows.Scan(&txn.ID, &txn.UserAssetID, &txn.AssetName, &txn.AssetInstrumentType, &txn.TxnType, &txn.Quantity, &txn.Price, &txn.TxnDate); err != nil {
 			slog.Error("failed to scan transaction row", "error", err.Error())
 			return nil, util.NewInternalError("failed to list transactions")
 		}

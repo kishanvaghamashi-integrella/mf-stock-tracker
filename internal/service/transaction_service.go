@@ -117,7 +117,7 @@ func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransact
 	return txn, nil
 }
 
-func (s *TransactionService) GetAllByUserID(ctx context.Context, userID int64, limit, offset int) ([]model.Transaction, error) {
+func (s *TransactionService) GetAllByUserID(ctx context.Context, userID int64, limit, offset int) ([]dto.ResponseTransactionDto, error) {
 	if err := s.ensureUserExists(ctx, userID); err != nil {
 		return nil, err
 	}
