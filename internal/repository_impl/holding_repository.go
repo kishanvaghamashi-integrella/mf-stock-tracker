@@ -38,7 +38,7 @@ func (r *HoldingRepository) GetAllByUserID(ctx context.Context, userID int64, li
 	var holdings []dto.HoldingResponseDto
 	for rows.Next() {
 		var h dto.HoldingResponseDto
-		if err := rows.Scan(&h.ID, &h.AssetName, &h.AssetInstrumentType, &h.Quantity, &h.AveragePrice, &h.InvestedPrice); err != nil {
+		if err := rows.Scan(&h.ID, &h.AssetName, &h.AssetInstrumentType, &h.Quantity, &h.AveragePrice, &h.InvestedCapital); err != nil {
 			slog.Error("failed to scan holding row", "error", err.Error())
 			return nil, util.NewInternalError("failed to list holdings")
 		}
