@@ -6,5 +6,8 @@ type HoldingResponseDto struct {
 	AssetInstrumentType string  `json:"asset_instrument_type"`
 	Quantity            float64 `json:"quantity"`
 	AveragePrice        float64 `json:"average_price"`
-	InvestedPrice       float64 `json:"invested_price"`
+	CurrentPrice        float64 `json:"current_price"`
+	InvestedCapital     float64 `json:"invested_capital"`
+	CurrentCapital      float64 `json:"current_capital"`
+	ReturnPercentage    float64 `json:"return_percentage"`
 }
