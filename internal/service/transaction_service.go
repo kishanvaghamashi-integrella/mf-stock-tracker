@@ -14,30 +14,103 @@ type TransactionService struct {
 	repo          repository.TransactionRepositoryInterface
 	userAssetRepo repository.UserAssetRepositoryInterface
 	userRepo      repository.UserRepositoryInterface
+	assetRepo     repository.AssetRepositoryInterface
 }
 
 func NewTransactionService(
 	repo repository.TransactionRepositoryInterface,
 	userAssetRepo repository.UserAssetRepositoryInterface,
 	userRepo repository.UserRepositoryInterface,
+	assetRepo repository.AssetRepositoryInterface,
 ) *TransactionService {
-	return &TransactionService{repo: repo, userAssetRepo: userAssetRepo, userRepo: userRepo}
+	return &TransactionService{repo: repo, userAssetRepo: userAssetRepo, userRepo: userRepo, assetRepo: assetRepo}
 }
 
-func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransactionRequest) (*model.Transaction, error) {
-	if err := s.ensureUserAssetExists(ctx, req.UserAssetID); err != nil {
+func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransactionRequest, userId int64) (*model.Transaction, error) {
+	userExists, err := s.userRepo.ExistsByID(ctx, userId)
+	if err != nil {
 		return nil, err
+	}
+	if !userExists {
+		return nil, util.NewNotFoundError("user not found on database")
+	}
+
+	assetExists, err := s.assetRepo.ExistsByID(ctx, req.AssetID)
+	if err != nil {
+		return nil, err
+	}
+	if !assetExists {
+		return nil, util.NewNotFoundError("asset not found on database")
+	}
+
+	userAssetID, err := s.userAssetRepo.GetIdByUserIdAssetId(ctx, userId, req.AssetID)
+	if err != nil {
+		return nil, err
+	}
+	if userAssetID == nil {
+		userAssetModel := &model.UserAsset{
+			UserID:  userId,
+			AssetID: req.AssetID,
+		}
+		if err := s.userAssetRepo.Create(ctx, userAssetModel); err != nil {
+			return nil, err
+		}
+		userAssetID = &userAssetModel.ID
 	}
 
 	txn := &model.Transaction{
-		UserAssetID: req.UserAssetID,
+		UserAssetID: *userAssetID,
 		TxnType:     req.TxnType,
 		Quantity:    req.Quantity,
 		Price:       req.Price,
 		TxnDate:     req.TxnDate,
 	}
 
-	if err := s.repo.Create(ctx, txn); err != nil {
+	holdingExists := true
+	holding, err := s.repo.GetHoldingsByUserAssetID(ctx, *userAssetID)
+	if err != nil {
+		return nil, err
+	}
+	if holding == nil {
+		if txn.TxnType == "SELL" {
+			return nil, util.NewBadRequestError("Cannot sell asset that is not currently held")
+		}
+
+		holding = &model.Holding{
+			UserAssetID:   *userAssetID,
+			TotalQuantity: txn.Quantity,
+			AveragePrice:  txn.Price,
+			TotalInvested: txn.Price * txn.Quantity,
+		}
+		holdingExists = false
+	} else {
+		if txn.TxnType == "BUY" {
+			oldBoughtPrice := holding.AveragePrice
+			oldBoughtQuantity := holding.TotalQuantity
+			oldTotalPrice := oldBoughtPrice * oldBoughtQuantity
+
+			newBoughtPrice := txn.Price
+			newBoughtQuantity := txn.Quantity
+			newTotalPrice := newBoughtPrice * newBoughtQuantity
+
+			totalQuantity := oldBoughtQuantity + newBoughtQuantity
+			totalPrice := oldTotalPrice + newTotalPrice
+			totalAverage := totalPrice / totalQuantity
+
+			holding.AveragePrice = totalAverage
+			holding.TotalQuantity += newBoughtQuantity
+			holding.TotalInvested = totalPrice
+		} else {
+			if txn.Quantity > holding.TotalQuantity {
+				return nil, util.NewBadRequestError("Sell quantity exceeds current holding quantity")
+			}
+
+			holding.TotalInvested -= txn.Price * txn.Quantity
+			holding.TotalQuantity -= txn.Quantity
+		}
+	}
+
+	if err := s.repo.Create(ctx, txn, holding, holdingExists); err != nil {
 		return nil, err
 	}
 
@@ -76,17 +149,6 @@ func (s *TransactionService) Update(ctx context.Context, id int64, req *dto.Upda
 
 func (s *TransactionService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
-}
-
-func (s *TransactionService) ensureUserAssetExists(ctx context.Context, userAssetID int64) error {
-	exists, err := s.userAssetRepo.ExistsByID(ctx, userAssetID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return util.NewNotFoundError(fmt.Sprintf("user asset with id %d not found", userAssetID))
-	}
-	return nil
 }
 
 func (s *TransactionService) ensureUserExists(ctx context.Context, userID int64) error {

@@ -48,7 +48,14 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	txn, err := h.service.Create(r.Context(), &req)
+	userId, ok := util.GetUserIDFromContext(r.Context())
+	if !ok {
+		slog.Warn("failed to parse user ID from context", "handler", "TransactionHandler.Create")
+		util.SendErrorResponse(w, http.StatusBadRequest, "error while parsing the userId")
+		return
+	}
+
+	txn, err := h.service.Create(r.Context(), &req, userId)
 	if err != nil {
 		util.HandleError(w, err, "TransactionHandler.Create")
 		return
@@ -107,23 +114,15 @@ func (h *TransactionHandler) GetAllByUserID(w http.ResponseWriter, r *http.Reque
 // @Tags transactions
 // @Accept json
 // @Produce json
-// @Param txnId path int true "Transaction ID"
 // @Param payload body dto.UpdateTransactionRequest true "Update transaction payload"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} util.ErrorBody
 // @Failure 404 {object} util.ErrorBody
 // @Failure 500 {object} util.ErrorBody
-// @Router /api/transactions/{txnId} [put]
+// @Router /api/transactions [put]
 // @Security BearerAuth
 func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request started", "handler", "TransactionHandler.Update", "method", r.Method, "path", r.URL.Path)
-
-	id, err := parseIntegerID(r, "txnId")
-	if err != nil {
-		slog.Warn("invalid transaction ID", "handler", "TransactionHandler.Update", "error", err)
-		util.SendErrorResponse(w, http.StatusBadRequest, "invalid transaction id")
-		return
-	}
 
 	var req dto.UpdateTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -138,12 +137,12 @@ func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Update(r.Context(), id, &req); err != nil {
+	if err := h.service.Update(r.Context(), req.ID, &req); err != nil {
 		util.HandleError(w, err, "TransactionHandler.Update")
 		return
 	}
 
-	slog.Info("transaction updated", "handler", "TransactionHandler.Update", "transactionID", id)
+	slog.Info("transaction updated", "handler", "TransactionHandler.Update", "transactionID", req.ID)
 	util.SendResponse(w, http.StatusOK, map[string]string{"message": "transaction updated successfully"})
 }
 

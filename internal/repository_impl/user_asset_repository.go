@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/model"
 	"github.com/kishanvaghamashi-integrella/mf-stock-tracker/internal/util"
@@ -102,4 +103,18 @@ func (r *UserAssetRepository) ExistsByID(ctx context.Context, id int64) (bool, e
 	}
 
 	return exists, nil
+}
+
+func (r *UserAssetRepository) GetIdByUserIdAssetId(ctx context.Context, userID, assetID int64) (*int64, error) {
+	query := `SELECT id FROM user_assets WHERE user_id=$1 AND asset_id = $2`
+
+	var userAssetId int64
+	if err := r.db.QueryRow(ctx, query, userID, assetID).Scan(&userAssetId); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		slog.Error("failed to retrieve userAssetID", "error", err.Error())
+		return nil, util.NewInternalError("failed to retrieve userAssetID")
+	}
+	return &userAssetId, nil
 }

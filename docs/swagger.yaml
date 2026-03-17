@@ -37,6 +37,8 @@ definitions:
     type: object
   dto.CreateTransactionRequest:
     properties:
+      asset_id:
+        type: integer
       price:
         type: number
       quantity:
@@ -45,14 +47,12 @@ definitions:
         type: string
       txn_type:
         type: string
-      user_asset_id:
-        type: integer
     required:
+    - asset_id
     - price
     - quantity
     - txn_date
     - txn_type
-    - user_asset_id
     type: object
   dto.CreateUserAssetRequest:
     properties:
@@ -87,17 +87,6 @@ definitions:
     required:
     - email
     - password
-    type: object
-  dto.LoginResponse:
-    properties:
-      email:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      token:
-        type: string
     type: object
   dto.UpdateAssetRequest:
     properties:
@@ -721,7 +710,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LoginResponse'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -742,7 +733,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LoginResponse'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
