@@ -32,7 +32,7 @@ func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransact
 		return nil, err
 	}
 	if !userExists {
-		return nil, util.NewNotFoundError("User does not found on database")
+		return nil, util.NewNotFoundError("user not found on database")
 	}
 
 	assetExists, err := s.assetRepo.ExistsByID(ctx, req.AssetID)
@@ -40,7 +40,7 @@ func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransact
 		return nil, err
 	}
 	if !assetExists {
-		return nil, util.NewNotFoundError("Asset does not found on database")
+		return nil, util.NewNotFoundError("asset not found on database")
 	}
 
 	userAssetID, err := s.userAssetRepo.GetIdByUserIdAssetId(ctx, userId, req.AssetID)
@@ -66,19 +66,23 @@ func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransact
 		TxnDate:     req.TxnDate,
 	}
 
-	var isHoldingExisted bool = true
+	holdingExists := true
 	holding, err := s.repo.GetHoldingsByUserAssetID(ctx, *userAssetID)
 	if err != nil {
 		return nil, err
 	}
 	if holding == nil {
+		if txn.TxnType == "SELL" {
+			return nil, util.NewBadRequestError("Cannot sell asset that is not currently held")
+		}
+
 		holding = &model.Holding{
 			UserAssetID:   *userAssetID,
 			TotalQuantity: txn.Quantity,
 			AveragePrice:  txn.Price,
-			TotalInvested: float64(txn.Price * txn.Quantity),
+			TotalInvested: txn.Price * txn.Quantity,
 		}
-		isHoldingExisted = false
+		holdingExists = false
 	} else {
 		if txn.TxnType == "BUY" {
 			oldBoughtPrice := holding.AveragePrice
@@ -97,12 +101,16 @@ func (s *TransactionService) Create(ctx context.Context, req *dto.CreateTransact
 			holding.TotalQuantity += newBoughtQuantity
 			holding.TotalInvested = totalPrice
 		} else {
+			if txn.Quantity > holding.TotalQuantity {
+				return nil, util.NewBadRequestError("Sell quantity exceeds current holding quantity")
+			}
+
 			holding.TotalInvested -= txn.Price * txn.Quantity
 			holding.TotalQuantity -= txn.Quantity
 		}
 	}
 
-	if err := s.repo.Create(ctx, txn, holding, isHoldingExisted); err != nil {
+	if err := s.repo.Create(ctx, txn, holding, holdingExists); err != nil {
 		return nil, err
 	}
 

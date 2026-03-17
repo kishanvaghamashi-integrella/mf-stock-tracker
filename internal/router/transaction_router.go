@@ -12,7 +12,7 @@ func NewTransactionRouter(handler *handler.TransactionHandler) http.Handler {
 
 	router.Post("/", handler.Create)
 	router.Get("/", handler.GetAllByUserID)
-	router.Put("/{txnId}", handler.Update)
+	router.Put("/", handler.Update)
 	router.Delete("/{txnId}", handler.Delete)
 
 	return router

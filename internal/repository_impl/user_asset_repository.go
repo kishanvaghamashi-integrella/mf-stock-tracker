@@ -114,7 +114,7 @@ func (r *UserAssetRepository) GetIdByUserIdAssetId(ctx context.Context, userID, 
 			return nil, nil
 		}
 		slog.Error("failed to retrieve userAssetID", "error", err.Error())
-		return nil, util.NewInternalError("failed to to retrieve userAssetID")
+		return nil, util.NewInternalError("failed to retrieve userAssetID")
 	}
 	return &userAssetId, nil
 }

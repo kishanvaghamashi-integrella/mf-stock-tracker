@@ -11,6 +11,7 @@ type CreateTransactionRequest struct {
 }
 
 type UpdateTransactionRequest struct {
+	ID       int64      `json:"id" validate:"required"`
 	TxnType  *string    `json:"txn_type" validate:"omitempty,txn_type"`
 	Quantity *float64   `json:"quantity" validate:"omitempty,gt=0"`
 	Price    *float64   `json:"price" validate:"omitempty,gt=0"`
