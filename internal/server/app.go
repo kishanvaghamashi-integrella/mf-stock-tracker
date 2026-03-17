@@ -27,18 +27,21 @@ func NewServer(db *pgxpool.Pool) *App {
 	assetRepo := repositoryimpl.NewAssetRepository(db)
 	userAssetRepo := repositoryimpl.NewUserAssetRepository(db)
 	txnRepo := repositoryimpl.NewTransactionRepository(db)
+	holdingRepo := repositoryimpl.NewHoldingRepository(db)
 
 	// Service
 	userService := service.NewUserService(userRepo)
 	assetService := service.NewAssetService(assetRepo)
 	userAssetService := service.NewUserAssetService(userAssetRepo, userRepo, assetRepo)
 	txnService := service.NewTransactionService(txnRepo, userAssetRepo, userRepo, assetRepo)
+	holdingService := service.NewHoldingService(holdingRepo, userRepo)
 
 	// Handler
 	userHandler := handler.NewUserService(userService)
 	assetHandler := handler.NewAssetHandler(assetService)
 	userAssetHandler := handler.NewUserAssetHandler(userAssetService)
 	txnHandler := handler.NewTransactionHandler(txnService)
+	holdingHandler := handler.NewHoldingHandler(holdingService)
 
 	r := chi.NewRouter()
 
@@ -64,6 +67,7 @@ func NewServer(db *pgxpool.Pool) *App {
 	r.Mount("/api/assets", router.NewAssetRouter(assetHandler))
 	r.Mount("/api/user-assets", router.NewUserAssetRouter(userAssetHandler))
 	r.Mount("/api/transactions", router.NewTransactionRouter(txnHandler))
+	r.Mount("/api/holdings", router.NewHoldingRouter(holdingHandler))
 	return &App{Router: r}
 }
 

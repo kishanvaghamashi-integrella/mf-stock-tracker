@@ -77,6 +77,21 @@ definitions:
     - name
     - password
     type: object
+  dto.HoldingResponseDto:
+    properties:
+      asset_instrument_type:
+        type: string
+      asset_name:
+        type: string
+      average_price:
+        type: number
+      id:
+        type: integer
+      invested_price:
+        type: number
+      quantity:
+        type: number
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -119,6 +134,8 @@ definitions:
     type: object
   dto.UpdateTransactionRequest:
     properties:
+      id:
+        type: integer
       price:
         type: number
       quantity:
@@ -127,6 +144,8 @@ definitions:
         type: string
       txn_type:
         type: string
+    required:
+    - id
     type: object
   model.Asset:
     properties:
@@ -370,6 +389,44 @@ paths:
       summary: Update asset
       tags:
       - assets
+  /api/holdings:
+    get:
+      description: Get all holdings for the authenticated user with pagination
+      parameters:
+      - description: 'Number of records to return (default: 50, max: 200)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Number of records to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.HoldingResponseDto'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
+      summary: List holdings for a user
+      tags:
+      - holdings
   /api/transactions:
     get:
       description: Get all transactions across all user assets for a given user with
@@ -444,6 +501,43 @@ paths:
       summary: Create transaction
       tags:
       - transactions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing transaction by ID
+      parameters:
+      - description: Update transaction payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorBody'
+      security:
+      - BearerAuth: []
+      summary: Update transaction
+      tags:
+      - transactions
   /api/transactions/{txnId}:
     delete:
       description: Delete a transaction by its ID
@@ -477,48 +571,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete transaction
-      tags:
-      - transactions
-    put:
-      consumes:
-      - application/json
-      description: Update an existing transaction by ID
-      parameters:
-      - description: Transaction ID
-        in: path
-        name: txnId
-        required: true
-        type: integer
-      - description: Update transaction payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateTransactionRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorBody'
-      security:
-      - BearerAuth: []
-      summary: Update transaction
       tags:
       - transactions
   /api/user-assets:
