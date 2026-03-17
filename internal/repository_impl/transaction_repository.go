@@ -96,7 +96,7 @@ func (r *TransactionRepository) GetAllByUserID(ctx context.Context, userID int64
 	var transactions []dto.ResponseTransactionDto
 	for rows.Next() {
 		var txn dto.ResponseTransactionDto
-		if err := rows.Scan(&txn.ID, &txn.UserAssetID, &txn.UserAssetName, &txn.InstrumentType, &txn.TxnType, &txn.Quantity, &txn.Price, &txn.TxnDate); err != nil {
+		if err := rows.Scan(&txn.ID, &txn.UserAssetID, &txn.AssetName, &txn.AssetInstrumentType, &txn.TxnType, &txn.Quantity, &txn.Price, &txn.TxnDate); err != nil {
 			slog.Error("failed to scan transaction row", "error", err.Error())
 			return nil, util.NewInternalError("failed to list transactions")
 		}
