@@ -1,7 +1,7 @@
 package dto
 
 type CreateAssetRequest struct {
-	Symbol             string `json:"symbol" validate:"required,min=1,max=20"`
+	Symbol             string `json:"symbol" validate:"required,min=1,max=100"`
 	Name               string `json:"name" validate:"required,min=1,max=200"`
 	InstrumentType     string `json:"instrument_type" validate:"required,instrument_type"`
 	ISIN               string `json:"isin" validate:"required,min=10,max=50"`
